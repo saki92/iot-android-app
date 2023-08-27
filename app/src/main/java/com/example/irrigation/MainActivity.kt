@@ -2,6 +2,7 @@ package com.example.irrigation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +37,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.irrigation.ui.theme.IrrigationTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +69,7 @@ fun IrrigationApp(
     viewModel: DeviceListViewModel,
     navController: NavHostController = rememberNavController()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     NavHost(navController = navController,
         startDestination = IrrigationScreen.Start.name,
         modifier = Modifier)
@@ -71,17 +77,45 @@ fun IrrigationApp(
         composable(route = IrrigationScreen.Start.name) {
             StartScreen(modifier = Modifier,
                 onSubmitButtonClicked = {
-
+                    CoroutineScope(IO).launch{
+                        viewModel.getDeviceList(it)
+                    }
+                    navController.navigate(IrrigationScreen.DeviceSelect.name)
                 })
         }
-    }
 
+        composable(route = IrrigationScreen.DeviceSelect.name) {
+            BackHandler(true) {
+                cancelOrderAndNavigateToStart(
+                    viewModel, navController
+                )
+            }
+            DeviceSelect(deviceData = uiState,
+                onSelectionChanged = {},
+                onCancelButtonClicked = {
+                    cancelOrderAndNavigateToStart(
+                        viewModel,
+                        navController
+                    )
+                }
+            )
+        }
+    }
+}
+
+private fun cancelOrderAndNavigateToStart(
+    viewModel: DeviceListViewModel,
+    navController: NavHostController
+) {
+    viewModel.resetOrder()
+    viewModel.closeConnection()
+    navController.popBackStack(IrrigationScreen.Start.name, inclusive = false)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartScreen(modifier: Modifier = Modifier,
-                onSubmitButtonClicked: (String) -> Unit) {
+                onSubmitButtonClicked: (Int) -> Unit) {
     val focusManager = LocalFocusManager.current
     Column(
         verticalArrangement = Arrangement.Center,
@@ -107,8 +141,9 @@ fun StartScreen(modifier: Modifier = Modifier,
         Button(
             onClick = {
                 focusManager.clearFocus()
-                onSubmitButtonClicked(passcode)
+                onSubmitButtonClicked(passcode.toInt())
             }, // hide keyboard
+            enabled = passcode.isNotEmpty(),
             modifier = Modifier.padding(20.dp)
         ) {
             Text("Get Device List")
