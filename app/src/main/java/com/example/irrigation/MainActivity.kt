@@ -76,6 +76,7 @@ fun IrrigationApp(
                 }
                 DeviceSelect(deviceData = uiState,
                     onSelectionChanged = {},
+                    onNextButtonClicked = {},
                     onCancelButtonClicked = {
                         cancelOrderAndNavigateToStart(
                             viewModel,
