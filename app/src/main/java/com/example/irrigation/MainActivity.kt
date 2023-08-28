@@ -6,13 +6,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,6 +33,7 @@ import com.example.irrigation.ui.theme.IrrigationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import androidx.compose.ui.window.Dialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,11 +74,15 @@ fun IrrigationApp(
                 StartScreen(modifier = Modifier,
                     onSubmitButtonClicked = { passcode: Int ->
                         CoroutineScope(IO).launch {
-                            viewModel.getDeviceList(passcode = passcode
-                            )
+                            viewModel.getDeviceList(passcode = passcode)
                         }
-                        navController.navigate(IrrigationScreen.DeviceSelect.name)
-                    })
+                    },
+                    uiState = uiState,
+                    navController = navController,
+                    onCancelButtonClicked = { cancelOrderAndNavigateToStart(
+                        viewModel, navController
+                    ) }
+                )
             }
 
             composable(route = IrrigationScreen.DeviceSelect.name) {
