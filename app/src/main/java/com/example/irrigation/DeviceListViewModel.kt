@@ -25,6 +25,11 @@ class DeviceListViewModel : ViewModel() {
     private var connection: Socket? = null
 
     suspend fun getDeviceList(passcode: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                cancelState = false
+            )
+        }
         try {
             connection = Socket(SERVER_ADDRESS, SERVER_PORT)
             val writer = connection!!.getOutputStream()

@@ -44,7 +44,7 @@ fun CommandScreen(
     var valve0Set by remember { mutableStateOf(false) }
     var valve1Set by remember { mutableStateOf(false) }
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier) {
@@ -68,8 +68,14 @@ fun CommandScreen(
             Divider(thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
+            val motorTimeMax = 300
             OutlinedTextField(value = timerValue,
-                onValueChange = {timerValue = it},
+                onValueChange = {
+                    val intIt = it.toIntOrNull()?:0
+                    if (intIt <= motorTimeMax) {
+                        timerValue = it
+                    }
+                                },
                 singleLine = true,
                 label = { Text("Cut-off Timer:") },
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }), // hide keyboard when done is clicked
@@ -79,7 +85,7 @@ fun CommandScreen(
 
             Text("Set Valve 0")
             Row(modifier = Modifier.selectable(
-                selected = valve0Set == valve0Set,
+                selected = valve0Set,
                 onClick = {
                     valve0Set = true
                 }
@@ -87,7 +93,7 @@ fun CommandScreen(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 RadioButton(
-                    selected = valve0Set == valve0Set,
+                    selected = valve0Set,
                     onClick = {
                         valve0Set = true
                     }
@@ -95,7 +101,7 @@ fun CommandScreen(
                 Text("ON")}
 
             Row(modifier = Modifier.selectable(
-                selected = valve0Set == valve0Set,
+                selected = !valve0Set,
                 onClick = {
                     valve0Set = false
                 }
@@ -103,7 +109,7 @@ fun CommandScreen(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 RadioButton(
-                    selected = valve0Set == valve0Set,
+                    selected = !valve0Set,
                     onClick = {
                         valve0Set = false
                     }
@@ -117,7 +123,7 @@ fun CommandScreen(
             Spacer(modifier = Modifier.height(0.dp))
             Text("Set Valve 1")
             Row(modifier = Modifier.selectable(
-                selected = valve1Set == valve1Set,
+                selected = valve1Set,
                 onClick = {
                     valve1Set = true
                 }
@@ -125,7 +131,7 @@ fun CommandScreen(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 RadioButton(
-                    selected = valve1Set == valve1Set,
+                    selected = valve1Set,
                     onClick = {
                         valve1Set = true
                     }
@@ -133,7 +139,7 @@ fun CommandScreen(
                 Text("ON")}
 
             Row(modifier = Modifier.selectable(
-                selected = valve1Set == valve1Set,
+                selected = !valve1Set,
                 onClick = {
                     valve1Set = false
                 }
@@ -141,7 +147,7 @@ fun CommandScreen(
                 verticalAlignment = Alignment.CenterVertically
             ){
                 RadioButton(
-                    selected = valve1Set == valve1Set,
+                    selected = !valve1Set,
                     onClick = {
                         valve1Set = false
                     }

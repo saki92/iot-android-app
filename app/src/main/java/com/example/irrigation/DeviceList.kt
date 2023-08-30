@@ -36,7 +36,7 @@ fun DeviceSelect(modifier: Modifier = Modifier,
     val focusManager = LocalFocusManager.current
     var selectedValue by remember { mutableStateOf("") }
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier) {
