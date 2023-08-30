@@ -1,5 +1,6 @@
 package com.example.irrigation
 
+import CommandScreen
 import StartScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -76,6 +78,7 @@ fun IrrigationApp(
                         CoroutineScope(IO).launch {
                             viewModel.getDeviceList(passcode = passcode)
                         }
+                        navController.navigate(IrrigationScreen.DeviceSelect.name)
                     },
                     uiState = uiState,
                     navController = navController,
@@ -93,7 +96,12 @@ fun IrrigationApp(
                 }
                 DeviceSelect(deviceData = uiState,
                     onSelectionChanged = {},
-                    onNextButtonClicked = {},
+                    onNextButtonClicked = { deviceId: Byte ->
+                        navController.navigate(IrrigationScreen.Command.name)
+                        CoroutineScope(IO).launch {
+                            viewModel.getDeviceData(deviceId = deviceId)
+                        }
+                    },
                     onCancelButtonClicked = {
                         cancelOrderAndNavigateToStart(
                             viewModel,
@@ -102,8 +110,26 @@ fun IrrigationApp(
                     }
                 )
             }
+
+            composable(route = IrrigationScreen.Command.name) {
+                BackHandler(true) {
+                    cancelOrderAndNavigateToStart(
+                        viewModel, navController
+                    )
+                }
+                CommandScreen(modifier = Modifier,
+                    deviceData = uiState,
+                    onSubmitButtonClicked = { /*TODO*/ },
+                    onCancelButtonClicked = {
+                    cancelOrderAndNavigateToStart(
+                        viewModel,
+                        navController
+                    )
+                }
+            )
         }
     }
+}
 
 private fun cancelOrderAndNavigateToStart(
     viewModel: DeviceListViewModel,

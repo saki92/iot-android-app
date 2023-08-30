@@ -75,9 +75,6 @@ fun StartScreen(modifier: Modifier = Modifier,
             onClick = {
                 focusManager.clearFocus()
                 onSubmitButtonClicked(passcode.toInt())
-                if (uiState.connectionFail == 0) {
-                    navController.navigate(IrrigationScreen.DeviceSelect.name)
-                }
             }, // hide keyboard
             enabled = passcode.isNotEmpty(),
             modifier = Modifier.padding(20.dp)

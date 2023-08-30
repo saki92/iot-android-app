@@ -37,7 +37,7 @@ fun CommandScreen(
     modifier: Modifier,
     deviceData: DeviceData,
     onSubmitButtonClicked: () -> Unit,
-    onCancelButtonClicked: () -> Unit
+    onCancelButtonClicked: () -> Unit,
     ) {
     val focusManager = LocalFocusManager.current
     var timerValue by remember { mutableStateOf("") }
@@ -174,6 +174,12 @@ fun CommandScreen(
                 }
             }
         }
+    }
+    if (deviceData.connectionFail == -1) {
+        MinimalDialog(onDismissRequest = {},
+            messageText = "Server Not Reachable",
+            onCancelButtonClicked = onCancelButtonClicked
+        )
     }
 }
 

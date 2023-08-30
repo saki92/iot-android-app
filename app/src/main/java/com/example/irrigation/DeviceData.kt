@@ -7,6 +7,10 @@ data class DeviceData(
     val rem_time: Int = 0,
     val valve0_state: String = "Closed",
     val valve1_state: String = "Open",
+    val adc0: Int = 0,
+    val adc1: Int = 0,
+    val adc2: Int = 0,
+    val adc3: Int = 0,
 
     var connectionFail: Int = 0,
 )

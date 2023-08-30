@@ -57,6 +57,50 @@ class DeviceListViewModel : ViewModel() {
         }
     }
 
+    suspend fun getDeviceData(deviceId: Byte) {
+        try {
+            val sendData = byteArrayOf(MSG_TYPE_C1.toByte(), deviceId)
+            val writer = connection!!.getOutputStream()
+            writer.write(sendData)
+            val inputStream = InputStreamReader(connection!!.getInputStream())
+            val buffer = CharArray(16)
+            val bytesRead = inputStream.read(buffer)
+            val adc0 = (buffer[5].code and 0xFF) or ((buffer[6].code shl 8) and 0x300)
+            val adc1 = ((buffer[6].code shr 2) and 0x3F) or ((buffer[7].code shl 6) and 0x3C0)
+            val adc2 = ((buffer[7].code shr 4) and 0xF) or ((buffer[8].code shl 4) and 0x3F0)
+            val adc3 = ((buffer[8].code shr 6) and 0x3) or ((buffer[9].code shl 2) and 0x3FC)
+            val remMins = (buffer[10].code and 0xFF) or ((buffer[11].code shl 8) and 0xFF00)
+            val valve0 = (buffer[12].code shr 7) and 0x1
+            val valve1 = (buffer[12].code shr 6) and 0x1
+            _uiState.update { currentState ->
+                currentState.copy(
+                    adc0 = adc0,
+                    adc1 = adc1,
+                    adc2 = adc2,
+                    adc3 = adc3,
+                    rem_time = remMins,
+                    valve0_state = if (valve0 == 1) {
+                        "ON"
+                    } else {
+                        "OFF"
+                    },
+                    valve1_state = if (valve1 == 1) {
+                        "ON"
+                    } else {
+                        "OFF"
+                    },
+                )
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    connectionFail = -1
+                )
+            }
+        }
+    }
+
     fun resetOrder() {
         _uiState.value = DeviceData()
     }
@@ -66,6 +110,11 @@ class DeviceListViewModel : ViewModel() {
             if (connection!!.isConnected) {
                 connection!!.close()
             }
+        }
+        _uiState.update { currentState ->
+            currentState.copy(
+                connectionFail = 0
+            )
         }
     }
 }
