@@ -49,10 +49,12 @@ class DeviceListViewModel : ViewModel() {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            _uiState.update { currentState ->
-                currentState.copy(
-                    connectionFail = -1
-                )
+            if (!_uiState.value.cancelState) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        connectionFail = -1
+                    )
+                }
             }
         }
     }
@@ -113,7 +115,7 @@ class DeviceListViewModel : ViewModel() {
         }
         _uiState.update { currentState ->
             currentState.copy(
-                connectionFail = 0
+                cancelState = true
             )
         }
     }

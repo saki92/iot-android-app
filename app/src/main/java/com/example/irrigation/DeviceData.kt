@@ -12,5 +12,6 @@ data class DeviceData(
     val adc2: Int = 0,
     val adc3: Int = 0,
 
-    var connectionFail: Int = 0,
+    val connectionFail: Int = 0,
+    val cancelState: Boolean = false
 )
