@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.update
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.Socket
+import kotlin.experimental.or
 import kotlin.properties.Delegates
 
 private const val SERVER_ADDRESS = "35.153.79.3"
@@ -25,11 +26,6 @@ class DeviceListViewModel : ViewModel() {
     private var connection: Socket? = null
 
     suspend fun getDeviceList(passcode: Int) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                cancelState = false
-            )
-        }
         try {
             connection = Socket(SERVER_ADDRESS, SERVER_PORT)
             val writer = connection!!.getOutputStream()
@@ -54,13 +50,11 @@ class DeviceListViewModel : ViewModel() {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            if (!_uiState.value.cancelState) {
                 _uiState.update { currentState ->
                     currentState.copy(
                         connectionFail = -1
                     )
                 }
-            }
         }
     }
 
@@ -81,24 +75,53 @@ class DeviceListViewModel : ViewModel() {
             val valve1 = (buffer[12].code shr 6) and 0x1
             _uiState.update { currentState ->
                 currentState.copy(
+                    currentDeviceId = buffer[3].code.toByte(),
+                    rssi = buffer[4].code.toByte(),
                     adc0 = adc0,
                     adc1 = adc1,
                     adc2 = adc2,
                     adc3 = adc3,
                     rem_time = remMins,
                     valve0_state = if (valve0 == 1) {
-                        "ON"
+                        "Open"
                     } else {
-                        "OFF"
+                        "Closed"
                     },
                     valve1_state = if (valve1 == 1) {
-                        "ON"
+                        "Open"
                     } else {
-                        "OFF"
+                        "Closed"
                     },
                 )
             }
         } catch (e: IOException) {
+            e.printStackTrace()
+            _uiState.update { currentState ->
+                currentState.copy(
+                    connectionFail = -1
+                )
+            }
+        }
+    }
+
+    suspend fun sendCommand(cutOffTime: Int, valve0State: Boolean, valve1State: Boolean) {
+        try {
+            val motorStateByte = if (cutOffTime > 0) 0x1.toByte() else 0x0.toByte()
+            val val0inByte = if (valve0State) 0x2.toByte() else 0x0.toByte()
+            val val1inByte = if (valve1State) 0x4.toByte() else 0x0.toByte()
+            val sendData = byteArrayOf(MSG_TYPE_C2.toByte(),
+                0,
+                0,
+                uiState.value.currentDeviceId,
+                (cutOffTime and 0xFF).toByte(),
+                ((cutOffTime shr 8) and 0x3).toByte(),
+                val1inByte or val0inByte or motorStateByte,
+                0,
+                0
+                )
+            val writer = connection!!.getOutputStream()
+            writer.write(sendData)
+            } catch (e: IOException) {
             e.printStackTrace()
             _uiState.update { currentState ->
                 currentState.copy(
@@ -117,11 +140,6 @@ class DeviceListViewModel : ViewModel() {
             if (connection!!.isConnected) {
                 connection!!.close()
             }
-        }
-        _uiState.update { currentState ->
-            currentState.copy(
-                cancelState = true
-            )
         }
     }
 }

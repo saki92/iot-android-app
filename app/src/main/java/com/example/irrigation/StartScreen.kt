@@ -116,7 +116,7 @@ fun MinimalDialog(onDismissRequest: () -> Unit,
                 )
                 TextButton(
                     onClick = { onDismissRequest()
-                        onCancelButtonClicked},
+                        onCancelButtonClicked() },
                     modifier = Modifier.padding(8.dp)
                 ) {
                     Text("Dismiss")

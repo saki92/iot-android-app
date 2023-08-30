@@ -36,8 +36,9 @@ import com.example.irrigation.deviceName
 fun CommandScreen(
     modifier: Modifier,
     deviceData: DeviceData,
-    onSubmitButtonClicked: () -> Unit,
+    onSubmitButtonClicked: (Int, Boolean, Boolean) -> Unit,
     onCancelButtonClicked: () -> Unit,
+    onRefreshButtonClicked: () -> Unit
     ) {
     val focusManager = LocalFocusManager.current
     var timerValue by remember { mutableStateOf("") }
@@ -170,13 +171,31 @@ fun CommandScreen(
                 OutlinedButton(modifier = Modifier.weight(1f), onClick = onCancelButtonClicked) {
                     Text("Cancel")
                 }
+
                 Button(
                     modifier = Modifier.weight(1f),
                     // the button is enabled when the user makes a selection
                     enabled = timerValue.isNotEmpty(),
-                    onClick = { onSubmitButtonClicked() }
+                    onClick = { onSubmitButtonClicked(timerValue.toInt(), valve0Set, valve1Set) }
                 ) {
                     Text("Next")
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .weight(1f, false),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    // the button is enabled when the user makes a selection
+                    enabled = true,
+                    onClick = { onRefreshButtonClicked() }
+                ) {
+                    Text("Refresh")
                 }
             }
         }
@@ -210,8 +229,9 @@ fun CommandScreenPreview() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        onSubmitButtonClicked = {},
+        onSubmitButtonClicked = { _: Int, _: Boolean, _: Boolean ->},
         deviceData = data,
-        onCancelButtonClicked = {}
+        onCancelButtonClicked = {},
+        onRefreshButtonClicked = {}
     )
 }
