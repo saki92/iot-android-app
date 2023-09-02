@@ -49,6 +49,11 @@ fun CommandScreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier) {
+            Text("RSSI")
+            Text(deviceData.rssi.toString())
+            Divider(thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
             Text("Motor State")
             Text(deviceData.motor_state)
             Divider(thickness = 1.dp)
@@ -178,7 +183,7 @@ fun CommandScreen(
                     enabled = timerValue.isNotEmpty(),
                     onClick = { onSubmitButtonClicked(timerValue.toInt(), valve0Set, valve1Set) }
                 ) {
-                    Text("Next")
+                    Text("Send")
                 }
             }
             Row(
