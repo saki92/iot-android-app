@@ -63,25 +63,26 @@ class DeviceListViewModel : ViewModel() {
             val sendData = byteArrayOf(MSG_TYPE_C1.toByte(), deviceId)
             val writer = connection!!.getOutputStream()
             writer.write(sendData)
-            val inputStream = InputStreamReader(connection!!.getInputStream())
-            val buffer = CharArray(16)
+            val inputStream = connection!!.getInputStream()
+            val buffer = ByteArray(16)
             val bytesRead = inputStream.read(buffer)
-            val adc0 = (buffer[5].code and 0xFF) or ((buffer[6].code shl 8) and 0x300)
-            val adc1 = ((buffer[6].code shr 2) and 0x3F) or ((buffer[7].code shl 6) and 0x3C0)
-            val adc2 = ((buffer[7].code shr 4) and 0xF) or ((buffer[8].code shl 4) and 0x3F0)
-            val adc3 = ((buffer[8].code shr 6) and 0x3) or ((buffer[9].code shl 2) and 0x3FC)
-            val remMins = (buffer[10].code and 0xFF) or ((buffer[11].code shl 8) and 0xFF00)
-            val valve0 = (buffer[12].code shr 7) and 0x1
-            val valve1 = (buffer[12].code shr 6) and 0x1
+            val adc0 = (buffer[5].toInt() and 0xFF) or ((buffer[6].toInt() shl 8) and 0x300)
+            val adc1 = ((buffer[6].toInt() shr 2) and 0x3F) or ((buffer[7].toInt() shl 6) and 0x3C0)
+            val adc2 = ((buffer[7].toInt() shr 4) and 0xF) or ((buffer[8].toInt() shl 4) and 0x3F0)
+            val adc3 = ((buffer[8].toInt() shr 6) and 0x3) or ((buffer[9].toInt() shl 2) and 0x3FC)
+            val remMins = (buffer[10].toInt() and 0xFF) or ((buffer[11].toInt() shl 8) and 0xFF00)
+            val valve0 = (buffer[12].toInt() shr 2) and 0x1
+            val valve1 = (buffer[12].toInt() shr 3) and 0x1
             _uiState.update { currentState ->
                 currentState.copy(
-                    currentDeviceId = buffer[3].code.toByte(),
-                    rssi = buffer[4].code.toByte(),
+                    currentDeviceId = buffer[3],
+                    rssi = buffer[4],
                     adc0 = adc0,
                     adc1 = adc1,
                     adc2 = adc2,
                     adc3 = adc3,
                     rem_time = remMins,
+                    motor_state = if (remMins > 0) "ON" else "OFF",
                     valve0_state = if (valve0 == 1) {
                         "Open"
                     } else {
@@ -114,7 +115,7 @@ class DeviceListViewModel : ViewModel() {
                 0,
                 uiState.value.currentDeviceId,
                 (cutOffTime and 0xFF).toByte(),
-                ((cutOffTime shr 8) and 0x3).toByte(),
+                ((cutOffTime shr 8) and 0xFF).toByte(),
                 val1inByte or val0inByte or motorStateByte,
                 0,
                 0

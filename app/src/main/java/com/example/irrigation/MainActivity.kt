@@ -117,7 +117,7 @@ fun IrrigationApp(
                         viewModel, navController
                     )
                 }
-                CommandScreen(modifier = Modifier,
+                CommandScreen(
                     deviceData = uiState,
                     onSubmitButtonClicked = { cutOffTime: Int, val0: Boolean, val1: Boolean ->
                                             CoroutineScope(IO).launch {

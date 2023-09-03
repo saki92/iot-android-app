@@ -1,3 +1,4 @@
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -6,9 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.OutlinedButton
@@ -22,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,7 +38,6 @@ import com.example.irrigation.deviceName
 
 @Composable
 fun CommandScreen(
-    modifier: Modifier,
     deviceData: DeviceData,
     onSubmitButtonClicked: (Int, Boolean, Boolean) -> Unit,
     onCancelButtonClicked: () -> Unit,
@@ -45,10 +48,17 @@ fun CommandScreen(
     var valve0Set by remember { mutableStateOf(false) }
     var valve1Set by remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .padding(16.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus() //hide keyboard when tapped outside
+                })
+            }
     ) {
-        Column(modifier = Modifier) {
+        Column(modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            ) {
             Text("RSSI")
             Text(deviceData.rssi.toString())
             Divider(thickness = 1.dp)
@@ -56,6 +66,21 @@ fun CommandScreen(
 
             Text("Motor State")
             Text(deviceData.motor_state)
+            Divider(thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text("Phase A Voltage")
+            Text(getACVoltage(adcVal = deviceData.adc1).toString())
+            Divider(thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text("Phase B Voltage")
+            Text(getACVoltage(adcVal = deviceData.adc2).toString())
+            Divider(thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text("Phase C Voltage")
+            Text(getACVoltage(adcVal = deviceData.adc3).toString())
             Divider(thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -104,7 +129,7 @@ fun CommandScreen(
                         valve0Set = true
                     }
                 )
-                Text("ON")}
+                Text("Open")}
 
             Row(modifier = Modifier.selectable(
                 selected = !valve0Set,
@@ -120,7 +145,7 @@ fun CommandScreen(
                         valve0Set = false
                     }
                 )
-                Text("OFF")}
+                Text("Close")}
 
             Divider(
                 thickness = 1.dp,
@@ -142,7 +167,7 @@ fun CommandScreen(
                         valve1Set = true
                     }
                 )
-                Text("ON")}
+                Text("Open")}
 
             Row(modifier = Modifier.selectable(
                 selected = !valve1Set,
@@ -158,7 +183,7 @@ fun CommandScreen(
                         valve1Set = false
                     }
                 )
-                Text("OFF")}
+                Text("Close")}
 
             Divider(
                 thickness = 1.dp,
@@ -168,10 +193,8 @@ fun CommandScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .weight(1f, false),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.Bottom
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 OutlinedButton(modifier = Modifier.weight(1f), onClick = onCancelButtonClicked) {
                     Text("Cancel")
@@ -189,10 +212,8 @@ fun CommandScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .weight(1f, false),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.Bottom
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
                     modifier = Modifier.weight(1f),
@@ -213,6 +234,20 @@ fun CommandScreen(
     }
 }
 
+@Composable
+fun getACVoltage(adcVal: Int): Double {
+    val vref = 3.3
+    val res = 1024
+    val volt = adcVal * vref / res
+
+    val r1 = 2e6
+    val r2 = 20e3
+
+    val acVolt = volt * (r1 + r2) / r2
+
+    return String.format("%.1f", acVolt).toDouble()
+}
+
 @Preview(showBackground = true)
 @Composable
 fun CommandScreenPreview() {
@@ -231,9 +266,6 @@ fun CommandScreenPreview() {
         rem_time = 0
     )
     CommandScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
         onSubmitButtonClicked = { _: Int, _: Boolean, _: Boolean ->},
         deviceData = data,
         onCancelButtonClicked = {},
