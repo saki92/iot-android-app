@@ -119,10 +119,10 @@ fun IrrigationApp(
                 }
                 CommandScreen(
                     deviceData = uiState,
-                    onSubmitButtonClicked = { cutOffTime: Int, val0: Boolean, val1: Boolean ->
+                    onSubmitButtonClicked = { cutOffTime: Int, val0: Boolean, val1: Boolean, ms: Boolean ->
                                             CoroutineScope(IO).launch {
                                                 viewModel.sendCommand(cutOffTime = cutOffTime,
-                                                valve0State = val0, valve1State = val1)
+                                                valve0State = val0, valve1State = val1, motorState = ms)
                                             }
                     },
                     onCancelButtonClicked = {

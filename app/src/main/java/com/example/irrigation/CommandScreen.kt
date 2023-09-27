@@ -39,7 +39,7 @@ import com.example.irrigation.deviceName
 @Composable
 fun CommandScreen(
     deviceData: DeviceData,
-    onSubmitButtonClicked: (Int, Boolean, Boolean) -> Unit,
+    onSubmitButtonClicked: (Int, Boolean, Boolean, Boolean) -> Unit,
     onCancelButtonClicked: () -> Unit,
     onRefreshButtonClicked: () -> Unit
     ) {
@@ -47,6 +47,7 @@ fun CommandScreen(
     var timerValue by remember { mutableStateOf("") }
     var valve0Set by remember { mutableStateOf(false) }
     var valve1Set by remember { mutableStateOf(false) }
+    var motorState by remember { mutableStateOf(true) }
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -66,6 +67,11 @@ fun CommandScreen(
 
             Text("Motor State")
             Text(deviceData.motor_state)
+            Divider(thickness = 1.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text("Starter Coil Current")
+            Text(starterCoilCurrent(adcVal = deviceData.adc0).toString())
             Divider(thickness = 1.dp)
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -113,6 +119,45 @@ fun CommandScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.height(10.dp))
+            
+            Text("Set Motor State")
+            Row(modifier = Modifier.selectable(
+                selected = motorState,
+                onClick = {
+                    motorState = true
+                }
+            ),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                RadioButton(
+                    selected = motorState,
+                    onClick = {
+                        motorState = true
+                    }
+                )
+                Text("ON")}
+
+            Row(modifier = Modifier.selectable(
+                selected = !motorState,
+                onClick = {
+                    motorState = false
+                }
+            ),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                RadioButton(
+                    selected = !motorState,
+                    onClick = {
+                        motorState = false
+                    }
+                )
+                Text("OFF")}
+
+            Divider(
+                thickness = 1.dp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(0.dp))
 
             Text("Set Valve 0")
             Row(modifier = Modifier.selectable(
@@ -204,7 +249,7 @@ fun CommandScreen(
                     modifier = Modifier.weight(1f),
                     // the button is enabled when the user makes a selection
                     enabled = timerValue.isNotEmpty(),
-                    onClick = { onSubmitButtonClicked(timerValue.toInt(), valve0Set, valve1Set) }
+                    onClick = { onSubmitButtonClicked(timerValue.toInt(), valve0Set, valve1Set, motorState) }
                 ) {
                     Text("Send")
                 }
@@ -248,6 +293,18 @@ fun getACVoltage(adcVal: Int): Double {
     return String.format("%.1f", acVolt).toDouble()
 }
 
+@Composable
+fun starterCoilCurrent(adcVal: Int): Double {
+    val vref = 3.3
+    val res = 1024
+    val resolution = 0.05
+    val zeroCurVal = 1.65
+    val adcVoltage = adcVal * vref / res
+    val curVal = (adcVoltage - zeroCurVal) / resolution
+
+    return String.format("%.1f", curVal).toDouble()
+}
+
 @Preview(showBackground = true)
 @Composable
 fun CommandScreenPreview() {
@@ -266,7 +323,7 @@ fun CommandScreenPreview() {
         rem_time = 0
     )
     CommandScreen(
-        onSubmitButtonClicked = { _: Int, _: Boolean, _: Boolean ->},
+        onSubmitButtonClicked = { _: Int, _: Boolean, _: Boolean, _: Boolean ->},
         deviceData = data,
         onCancelButtonClicked = {},
         onRefreshButtonClicked = {}
