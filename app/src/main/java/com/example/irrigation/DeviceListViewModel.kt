@@ -17,7 +17,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.experimental.or
 
-private const val SERVER_ADDRESS = "35.153.79.3"
+private const val SERVER_ADDRESS = "192.168.193.106"
 private const val SERVER_PORT = 9482
 private const val MSG_TYPE_C0 = 2
 private const val MSG_TYPE_C1 = 3
@@ -110,7 +110,7 @@ class DeviceListViewModel : ViewModel() {
                     adc2 = adc2,
                     adc3 = adc3,
                     rem_time = remMins,
-                    motor_state = if (motorState == 1) "ON" else "OFF",
+                    motor_state = if (motorState == 0) "ON" else "OFF",
                     valve0_state = if (valve0 == 1) {
                         "Open"
                     } else {

@@ -6,7 +6,7 @@ data class DeviceData(
     val motor_state: String = "OFF",
     val rem_time: Int = 0,
     val valve0_state: String = "Closed",
-    val valve1_state: String = "Open",
+    val valve1_state: String = "Closed",
     val rssi: Byte = 0,
     val adc0: Int = 0,
     val adc1: Int = 0,

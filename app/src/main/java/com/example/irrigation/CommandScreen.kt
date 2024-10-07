@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +48,15 @@ fun CommandScreen(
     var timerValue by remember { mutableStateOf("") }
     var valve0Set by remember { mutableStateOf(false) }
     var valve1Set by remember { mutableStateOf(false) }
-    var motorState by remember { mutableStateOf(true) }
+    var motorState by remember { mutableStateOf(false) }
+
+    // LaunchedEffect to update states whenever deviceData changes
+    LaunchedEffect(deviceData) {
+        valve0Set = deviceData.valve0_state == "Open"
+        valve1Set = deviceData.valve1_state == "Open"
+        motorState = deviceData.motor_state == "ON"
+    }
+
     Column(
         modifier = Modifier
             .padding(16.dp)
